@@ -29,7 +29,7 @@ WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 
 # 从构建阶段拷贝应用代码
-COPY --from=builder /app/server.js ./server.js
+COPY . .
 
 
 cmd ["node","./app.js"]
