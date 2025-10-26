@@ -22,14 +22,24 @@ COPY . .
 # 再次使用相同的最小镜像，创建一个干净的生产环境
 FROM node:18-slim
 
+run apt-get update && apt-get install curl wget -y
+
+run mkdir -p --mode=0755 /usr/share/keyrings
+run curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+run echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared any main' | tee /etc/apt/sources.list.d/cloudflared.list
+run apt-get update
+run apt-get install cloudflared -y
+run apt-get install sudo -y
+
 # 设置工作目录
 WORKDIR /app
 
 # 从构建阶段拷贝已经安装好的 node_modules
 COPY --from=builder /app/node_modules ./node_modules
 
-# 从构建阶段拷贝应用代码
 COPY . .
 
+RUN chmod 777 ./entrypoint.sh
+EXPOSE 8080
 
-cmd ["node","./app.js"]
+cmd ["./entrypoint.sh"]
